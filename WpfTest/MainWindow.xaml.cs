@@ -24,11 +24,6 @@ namespace WpfTest {
 
         public MainWindow() {
             InitializeComponent();
-            MyInitialize();
-        }
-
-        private void MyInitialize() {
-            
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
