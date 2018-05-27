@@ -151,13 +151,7 @@ namespace WpfTest {
                     else CurrentPath += filename;//双击项为目录
                 }
 
-                //双击项为目录
-                lb.BeginInit();
-                var list = CreatLBItemFromPath(CurrentPath);
-                lb.Items.Clear();
-                foreach (var i in list)
-                    lb.Items.Add(i);
-                lb.EndInit();
+                FlushLBByCurrentPath();
                 if (CurrentPath == "") address_box.Text = "此电脑";
                 else address_box.Text = CurrentPath;
             }
@@ -166,8 +160,52 @@ namespace WpfTest {
         //listbox空白区域点击取消选中
         private void lb_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource.GetType() == typeof(ScrollViewer)) {
+                var item = lb.SelectedItem as MyListBoxItem;
+                if (item != null) {
+                    FlushLBByCurrentPath();
+                }
                 lb.SelectedIndex = -1;
             }
+        }
+
+        //由CurrentPath变量刷新listbox
+        private void FlushLBByCurrentPath() {
+            lb.BeginInit();
+            var list = CreatLBItemFromPath(CurrentPath);
+            lb.Items.Clear();
+            foreach (var i in list)
+                lb.Items.Add(i);
+            lb.EndInit();
+        }
+
+        //lisibox键盘，监控快捷键F2，重命名用
+        private void lb_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.F2) {
+                var item = lb.SelectedItem as MyListBoxItem;
+                if (item == null) return;
+                lb.BeginInit();
+                item.MyVisialbe = Visibility.Visible;
+                lb.EndInit();
+            }
+        }
+
+        //listbox子控件textbox，重命名用
+        private void TextBox_KeyDown(object sender, KeyEventArgs e) {
+            try {
+                if (e.Key == Key.Enter) {
+                    var item = lb.SelectedItem as MyListBoxItem;
+                    var tb = sender as TextBox;
+                    string newname = tb.Text, oldname = item.MyText, copyParent = CurrentPath;
+                    if (copyParent == "") return;
+                    else if (copyParent.Length > 3) copyParent += "\\";
+                    if (File.Exists(CurrentPath + oldname))
+                        File.Move(CurrentPath + oldname, CurrentPath  + newname);
+                    else Directory.Move(CurrentPath  + oldname, CurrentPath + newname);
+                    item.MyVisialbe = Visibility.Hidden;
+                    FlushLBByCurrentPath();
+                }
+            }
+            catch (Exception) { }
         }
 
     }
@@ -191,11 +229,13 @@ namespace WpfTest {
         public BitmapImage MyIcon { set; get; }
         public string MyText { set; get; }
         public string MyMessage { set; get; }
+        public Visibility MyVisialbe { set; get; }
 
         public MyListBoxItem(string text,string icon) {
             MyText = text;
             MyIcon = new BitmapImage();
             MyIcon.BeginInit();
+            MyVisialbe = Visibility.Hidden;
             switch (icon) {
                 case "folder":
                     MyIcon.StreamSource = new MemoryStream(folder);
