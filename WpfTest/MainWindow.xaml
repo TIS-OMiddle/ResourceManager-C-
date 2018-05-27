@@ -7,21 +7,25 @@
         mc:Ignorable="d"
         Title="WPF界面开发测试" Height="400" Width="600" MinWidth="400" MinHeight="200"
         Loaded="Window_Loaded">
+    
+    <Window.Resources>
+        <local:StringformatConvert x:Key="stringConvert"/>
+    </Window.Resources>
 
     <Grid>
         <Grid.Resources>
             <DataTemplate x:Key="MyListBoxTemplate">
-                <StackPanel Orientation="Vertical" Width="70" Height="70">
+                <StackPanel Orientation="Vertical" Width="80" Height="70">
                     <StackPanel.ToolTip>
                         <TextBlock Text="{Binding Path=MyMessage}"/>
                     </StackPanel.ToolTip>
                     <Image Width="50" Height="50" Source="{Binding Path = MyIcon}" HorizontalAlignment="Center"/>
-                    <TextBox IsReadOnly="True"
-                             Text="{Binding Path=MyText}" 
-                             FontSize="12"
-                             BorderThickness="0,0,0,0"
-                             HorizontalAlignment="Center"
+                    <TextBlock Text="{Binding Path=MyText,Converter={StaticResource stringConvert},ConverterParameter=10}" 
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               Panel.ZIndex="0"
                              />
+                    <TextBox Name="name_box" Width="70" Panel.ZIndex="1" Margin="0,-15,0,0" Visibility="Hidden"/>
                 </StackPanel>
             </DataTemplate>
         </Grid.Resources>
@@ -37,7 +41,7 @@
         </Grid.RowDefinitions>
         <GridSplitter HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1"/>
 
-        <TextBox Name="address_box" Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="1"
+        <TextBox Name="address_box" Grid.Row="0" Grid.ColumnSpan="3" Grid.Column="0"
                  Width="400" Height="20" VerticalAlignment="Top" Margin="10,5,0,0"/>
 
 

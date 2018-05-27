@@ -39,6 +39,7 @@ namespace WpfTest {
             tv.EndInit();
         }
 
+        //获取根结点
         public MyTreeViewItem GetRootTVItem() {
             string[] disks = Directory.GetLogicalDrives();
             DriveInfo[] disksInfo = DriveInfo.GetDrives();
@@ -54,6 +55,7 @@ namespace WpfTest {
             return root;
         }
 
+        //为树结点创建子结点
         public void CreatSubTVItemFromTVItem(MyTreeViewItem item) {
             try {
                 string newpath = item.Tag.ToString();
@@ -69,14 +71,19 @@ namespace WpfTest {
             catch (Exception) { }
         }
 
-
+        //根据路径返回listbox的Item集合
         public List<MyListBoxItem> CreatLBItemFromPath(string path) {
             List<MyListBoxItem> res = new List<MyListBoxItem>();
             if (path == "") {
-                foreach (var i in ((MyTreeViewItem)tv.Items[0]).Items) {
-                    var x = i as MyTreeViewItem;
-                    MyListBoxItem lbit = new MyListBoxItem(x.HeaderText, "folder");
+                DriveInfo[] disksInfo = DriveInfo.GetDrives();
+                int j = 0;
+                foreach (var i in disksInfo) {
+                    MyListBoxItem lbit = new MyListBoxItem(
+                        disksInfo[j].VolumeLabel + " (" + i.Name.Substring(0, 2) + ")", "folder");
+                    lbit.MyMessage = "可用空间:" + (disksInfo[j].TotalFreeSpace/1024/1024/1024).ToString()+"GB"
+                        + "\n总大小:"+(disksInfo[j].TotalSize / 1024 / 1024 / 1024).ToString() + "GB";
                     res.Add(lbit);
+                    j++;
                 }
                 return res;
             }
@@ -86,7 +93,7 @@ namespace WpfTest {
             foreach (var i in files) {
                 if ((i.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
                 MyListBoxItem lbit = new MyListBoxItem(i.Name, "file");
-                lbit.MyMessage = i.Name + "\n类型:" + i.Extension.Substring(1) + "文件\n修改日期:" + i.LastWriteTime.ToString();
+                lbit.MyMessage = i.Name + "\n类型:" + i.Extension + "文件\n修改日期:" + i.LastWriteTime.ToString();
                 res.Add(lbit);
             }
             foreach (var i in dirs) {
@@ -98,13 +105,13 @@ namespace WpfTest {
             return res;
         }
 
+        //treeview选中项改变事件
         private void tv_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
             MyTreeViewItem my_select = (MyTreeViewItem)tv.SelectedItem;
             CurrentPath = my_select.Tag.ToString();
             if (my_select.Items.Count == 0) {
                 tv.BeginInit();
                 CreatSubTVItemFromTVItem(my_select);
-                
                 tv.EndInit();
             }
             List<MyListBoxItem> list = CreatLBItemFromPath(CurrentPath);
@@ -117,19 +124,34 @@ namespace WpfTest {
             else address_box.Text = CurrentPath;
         }
 
+        //listbox双击进入或打开
         private void lb_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            if (e.OriginalSource.GetType() != typeof(ScrollViewer)) {
+            if (e.OriginalSource.GetType() != typeof(ScrollViewer)&&e.RightButton!=MouseButtonState.Pressed) {
                 var m = (MyListBoxItem)lb.SelectedItem;
+                if (m == null) return;
                 string filename = m.MyText;
-                if (File.Exists(CurrentPath + filename))
-                    System.Diagnostics.Process.Start(CurrentPath + filename);
-                if (CurrentPath == "") {
+
+                //处理当前路径+双击项
+                if (CurrentPath == "") {//双击项为盘符，加上双击项
                     CurrentPath = filename.Substring(filename.Length - 3, 2) + "\\";
                 }
-                else {
-                    CurrentPath = CurrentPath + "\\";
-                    CurrentPath += filename;
+                else if (CurrentPath.Length < 4) {//当前路径为盘符，不加斜杠
+                    if (File.Exists(CurrentPath + filename)) {//双击项为文件
+                        System.Diagnostics.Process.Start(CurrentPath + filename);
+                        return;
+                    }
+                    else CurrentPath += filename;//双击项为目录
                 }
+                else {//当前路径不为盘符不加斜杠
+                    CurrentPath = CurrentPath + "\\";
+                    if (File.Exists(CurrentPath + filename)) {//双击项为文件
+                        System.Diagnostics.Process.Start(CurrentPath + filename);
+                        return;
+                    }
+                    else CurrentPath += filename;//双击项为目录
+                }
+
+                //双击项为目录
                 lb.BeginInit();
                 var list = CreatLBItemFromPath(CurrentPath);
                 lb.Items.Clear();
@@ -141,6 +163,7 @@ namespace WpfTest {
             }
         }
 
+        //listbox空白区域点击取消选中
         private void lb_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource.GetType() == typeof(ScrollViewer)) {
                 lb.SelectedIndex = -1;
