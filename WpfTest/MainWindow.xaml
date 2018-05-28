@@ -48,6 +48,11 @@
         </Grid.RowDefinitions>
         <GridSplitter HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1"/>
 
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+            <Button Name="goback_bt" Height="50" Margin="5,0,5,0" Click="goback_bt_Click">后退</Button>
+            <Button Name="goahead_bt" Height="50" Margin="5,0,5,0" Click="goahead_bt_Click">前进</Button>
+        </StackPanel>
+
         <TextBox Name="address_box" Grid.Row="0" Grid.ColumnSpan="3" Grid.Column="0"
                  Width="400" Height="20" VerticalAlignment="Top" Margin="10,5,0,0"/>
 

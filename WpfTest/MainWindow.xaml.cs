@@ -23,6 +23,8 @@ namespace WpfTest {
 
         private string CurrentPath = "";
         private bool TVChangeByOther = false;
+        private LinkedList<string> Back_History = new LinkedList<string>();
+        private LinkedList<string> Ahead_History = new LinkedList<string>();
 
         public MainWindow() {
             InitializeComponent();
@@ -57,6 +59,7 @@ namespace WpfTest {
         private void tv_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
             if (TVChangeByOther) return;//不来自tv本身的选择改变则直接退出
 
+            Back_History.AddLast(CurrentPath);//记录进栈
             MyTreeViewItem my_select = (MyTreeViewItem)tv.SelectedItem;
             CurrentPath = my_select.Tag.ToString();
             if (my_select.Items.IsEmpty) {
@@ -78,7 +81,6 @@ namespace WpfTest {
         private void lb_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource.GetType() != typeof(ScrollViewer)&&e.RightButton!=MouseButtonState.Pressed) {
                 var m = (MyListBoxItem)lb.SelectedItem;
-                if (m == null) return;
                 string filename = m.MyText;
 
                 //处理当前路径+双击项
@@ -90,7 +92,10 @@ namespace WpfTest {
                         System.Diagnostics.Process.Start(CurrentPath + filename);
                         return;
                     }
-                    else CurrentPath += filename;//双击项为目录
+                    else {
+                        Back_History.AddLast(CurrentPath);//记录进栈
+                        CurrentPath += filename;//双击项为目录
+                    }
                 }
                 else {//当前路径不为盘符加斜杠
                     CurrentPath = CurrentPath + "\\";
@@ -98,7 +103,10 @@ namespace WpfTest {
                         System.Diagnostics.Process.Start(CurrentPath + filename);
                         return;
                     }
-                    else CurrentPath += filename;//双击项为目录
+                    else {
+                        Back_History.AddLast(CurrentPath);//记录进栈
+                        CurrentPath += filename;//双击项为目录
+                    }
                 }
                 //刷新listbox
                 FlushLBByCurrentPath();
@@ -108,6 +116,9 @@ namespace WpfTest {
                 TVChangeByOther = true;
                 MyItemManager.GetTVItemFromPath(tv, CurrentPath, true);
                 TVChangeByOther = false;
+
+                //清空前进
+                if (Ahead_History.Count > 0) Ahead_History.Clear();
             }
         }
 
@@ -162,5 +173,40 @@ namespace WpfTest {
             catch (Exception) { }
         }
 
+        //后退按钮
+        private void goback_bt_Click(object sender, RoutedEventArgs e) {
+            if (Back_History.Count != 0) {
+                //获取历史记录并移出历史记录
+                string his = Back_History.Last.Value;
+                Back_History.RemoveLast();
+                Ahead_History.AddLast(CurrentPath);//当前目录移入前进
+                CurrentPath = his;
+                address_box.Text = CurrentPath == "" ? "此电脑" : CurrentPath;
+                //刷新tv
+                TVChangeByOther = true;
+                MyItemManager.GetTVItemFromPath(tv, his, true);
+                TVChangeByOther = false;
+                //刷新listbox
+                FlushLBByCurrentPath();
+            }
+        }
+
+        private void goahead_bt_Click(object sender, RoutedEventArgs e) {
+            if (Ahead_History.Count != 0) {
+                //当前目录移入历史记录
+                Back_History.AddLast(CurrentPath);
+                //获取前进并移出
+                string go = Ahead_History.Last.Value;
+                Ahead_History.RemoveLast();
+                //刷新tv
+                TVChangeByOther = true;
+                MyItemManager.GetTVItemFromPath(tv, go, true);
+                TVChangeByOther = false;
+                //刷新listbox
+                CurrentPath = go;
+                address_box.Text = CurrentPath == "" ? "此电脑" : CurrentPath;
+                FlushLBByCurrentPath();
+            }
+        }
     }
 }
