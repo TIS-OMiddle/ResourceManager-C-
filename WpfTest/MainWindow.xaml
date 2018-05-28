@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfTest"
+        xmlns:mycon="clr-namespace:MyControlItem;assembly=MyControlItem"
         mc:Ignorable="d"
         Title="WPF界面开发测试" Height="400" Width="600" MinWidth="400" MinHeight="200"
         Loaded="Window_Loaded">
     
     <Window.Resources>
-        <local:StringformatConvert x:Key="stringConvert"/>
+        <mycon:StringformatConvert x:Key="stringConvert"/>
         <Style x:Key="RenameStyle" TargetType="{x:Type TextBox}">
             <EventSetter Event="KeyDown" Handler="TextBox_KeyDown"/>
         </Style>
@@ -18,7 +19,8 @@
     <Grid>
         <Grid.Resources>
             <DataTemplate x:Key="MyListBoxTemplate">
-                <StackPanel Orientation="Vertical" Width="80" Height="70">
+                <StackPanel Orientation="Vertical" Width="80" Height="70"
+                            FocusManager.FocusedElement="{Binding ElementName=address_box}">
                     <StackPanel.ToolTip>
                         <TextBlock Text="{Binding Path=MyMessage}"/>
                     </StackPanel.ToolTip>
@@ -28,7 +30,7 @@
                                HorizontalAlignment="Center"
                                Panel.ZIndex="0"
                              />
-                    <TextBox Width="70" Panel.ZIndex="1" 
+                    <TextBox Name="address_box" Width="75" Panel.ZIndex="1" Text="{Binding Path=MyText}" TextAlignment="Center"
                              Margin="0,-15,0,0" Visibility="{Binding Path=MyVisialbe}"
                              Style="{DynamicResource RenameStyle}"/>
                 </StackPanel>
