@@ -32,28 +32,11 @@ namespace WpfTest {
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             tv.BeginInit();
-            MyTreeViewItem root = GetRootTVItem();
+            MyTreeViewItem root = MyItemManager.GetRootTVItem();
             tv.Items.Add(root);
             ((MyTreeViewItem)tv.Items[0]).IsSelected = true;
             tv.EndInit();
         }
-
-        //获取根结点
-        public MyTreeViewItem GetRootTVItem() {
-            string[] disks = Directory.GetLogicalDrives();
-            DriveInfo[] disksInfo = DriveInfo.GetDrives();
-            int j = 0;
-            MyTreeViewItem root = new MyTreeViewItem("此电脑", MyIcons.disk);
-            root.Tag = "";
-            foreach (string i in disks) {
-                MyTreeViewItem tvic = new MyTreeViewItem(
-                    disksInfo[j++].VolumeLabel + " (" + i.Substring(0, 2) + ")", MyIcons.disk);
-                tvic.Tag = i;
-                root.Items.Add(tvic);
-            }
-            return root;
-        }
-
 
         //treeview选中项改变事件
         private void tv_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
@@ -123,7 +106,7 @@ namespace WpfTest {
         }
 
         //listbox空白区域点击取消选中事件
-        private void lb_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+        private void lb_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource.GetType() == typeof(ScrollViewer)) {
                 var item = lb.SelectedItem as MyListBoxItem;
                 if (item != null) {
@@ -143,7 +126,7 @@ namespace WpfTest {
             lb.EndInit();
         }
 
-        //lisibox键盘，监控快捷键F2，重命名用事件
+        //lisibox键盘，监控快捷键事件
         private void lb_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.F2) {
                 var item = lb.SelectedItem as MyListBoxItem;
@@ -163,9 +146,9 @@ namespace WpfTest {
                     string newname = tb.Text, oldname = item.MyText, copyParent = CurrentPath;
                     if (copyParent == "") return;
                     else if (copyParent.Length > 3) copyParent += "\\";
-                    if (File.Exists(CurrentPath + oldname))
-                        File.Move(CurrentPath + oldname, CurrentPath  + newname);
-                    else Directory.Move(CurrentPath  + oldname, CurrentPath + newname);
+                    if (File.Exists(copyParent + oldname))
+                        File.Move(copyParent + oldname, copyParent + newname);
+                    else Directory.Move(copyParent + oldname, copyParent + newname);
                     item.MyVisialbe = Visibility.Hidden;
                     FlushLBByCurrentPath();
                 }
@@ -173,7 +156,7 @@ namespace WpfTest {
             catch (Exception) { }
         }
 
-        //后退按钮
+        //后退按钮事件
         private void goback_bt_Click(object sender, RoutedEventArgs e) {
             if (Back_History.Count != 0) {
                 //获取历史记录并移出历史记录
@@ -191,6 +174,7 @@ namespace WpfTest {
             }
         }
 
+        //前进按钮事件
         private void goahead_bt_Click(object sender, RoutedEventArgs e) {
             if (Ahead_History.Count != 0) {
                 //当前目录移入历史记录
@@ -207,6 +191,79 @@ namespace WpfTest {
                 address_box.Text = CurrentPath == "" ? "此电脑" : CurrentPath;
                 FlushLBByCurrentPath();
             }
+        }
+
+        //右键菜单显示事件
+        private void ContextMenu_Opened(object sender, RoutedEventArgs e) {
+            if (CurrentPath == "") {
+                menu_copy.IsEnabled = false;
+                menu_delete.IsEnabled = false;
+                menu_rename.IsEnabled = false;
+                menu_creat.IsEnabled = false;
+                menu_paste.IsEnabled = false;
+
+                menu_status.IsEnabled = true;
+            }
+            else if (lb.SelectedItem==null) {
+                menu_copy.IsEnabled = false;
+                menu_delete.IsEnabled = false;
+                menu_rename.IsEnabled = false;
+                menu_status.IsEnabled = false;
+
+                menu_creat.IsEnabled = true;
+                menu_paste.IsEnabled = true;
+            }
+            else {
+                menu_creat.IsEnabled = false;
+                menu_paste.IsEnabled = false;
+
+                menu_copy.IsEnabled = true;
+                menu_delete.IsEnabled = true;
+                menu_rename.IsEnabled = true;
+                menu_status.IsEnabled = true;
+            }
+        }
+
+        private void menu_rename_Click(object sender, RoutedEventArgs e) {
+            var item = lb.SelectedItem as MyListBoxItem;
+            lb.BeginInit();
+            item.MyVisialbe = Visibility.Visible;
+            lb.EndInit();
+        }
+
+        private void menu_delete_Click(object sender, RoutedEventArgs e) {
+            var item = lb.SelectedItem as MyListBoxItem;
+            string name = item.MyText;
+            string _fileinfo;
+            if (CurrentPath.Length < 4)
+                _fileinfo = CurrentPath + name;
+            else _fileinfo = CurrentPath + "\\" + name;
+
+            var dr = MessageBox.Show("您确认要删除吗?", "删除",MessageBoxButton.YesNo);
+            if (dr == MessageBoxResult.No)
+                return;
+
+            if (File.Exists(_fileinfo)) {
+                File.Delete(_fileinfo);
+                FlushLBByCurrentPath();
+            }
+            else if (Directory.Exists(_fileinfo)) {
+                Directory.Delete(_fileinfo, true);
+                FlushLBByCurrentPath();
+            }
+        }
+
+        private void menu_creat_dirs_Click(object sender, RoutedEventArgs e) {
+            string name = "新建文件夹";
+            string _fileinfo;
+            if (CurrentPath.Length < 4)
+                _fileinfo = CurrentPath + name;
+            else _fileinfo = CurrentPath + "\\" + name;
+            while (Directory.Exists(_fileinfo)) {
+                _fileinfo += " 副本";
+            }
+            Directory.CreateDirectory(_fileinfo);
+            FlushLBByCurrentPath();
         }
     }
 }
