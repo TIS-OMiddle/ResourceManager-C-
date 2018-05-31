@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MyControlItem;
+using System.Threading;
 
 namespace WpfTest {
     /// <summary>
@@ -264,6 +265,28 @@ namespace WpfTest {
             }
             Directory.CreateDirectory(_fileinfo);
             FlushLBByCurrentPath();
+        }
+
+
+        private CancellationTokenSource cts;
+        //查找按钮点击事件
+        private void find_bt_Click(object sender, RoutedEventArgs e) {
+            string path = CurrentPath;
+            if (CurrentPath == "") {
+                MessageBox.Show("请进入某个磁盘后搜索", "提示", MessageBoxButton.OK);
+                return;
+            }
+            string pattern = "*" + search_box.Text + "*";
+            cts = new CancellationTokenSource();
+            lb.BeginInit();
+            lb.Items.Clear();
+            lb.EndInit();
+            var i = MyFindManeger.AddLBItemByThreads(lb, path, cts.Token, pattern);
+        }
+
+        //取消按钮点击事件
+        private void cancell_bt_Click(object sender, RoutedEventArgs e) {
+            cts.Cancel();
         }
     }
 }
