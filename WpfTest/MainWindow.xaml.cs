@@ -67,6 +67,12 @@ namespace WpfTest {
                 var m = (MyListBoxItem)lb.SelectedItem;
                 string filename = m.MyText;
 
+                //处理查找
+                if (CurrentPath == "查找") {
+                    menu_open_Click(sender, e);
+                    return;
+                }
+
                 //处理当前路径+双击项
                 if (CurrentPath == "") {//双击项为盘符，加上双击项
                     CurrentPath = filename.Substring(filename.Length - 3, 2) + "\\";
@@ -160,6 +166,7 @@ namespace WpfTest {
         //后退按钮事件
         private void goback_bt_Click(object sender, RoutedEventArgs e) {
             if (Back_History.Count != 0) {
+                if (address_box.IsReadOnly) address_box.IsReadOnly = false;//解锁输入框
                 //获取历史记录并移出历史记录
                 string his = Back_History.Last.Value;
                 Back_History.RemoveLast();
@@ -180,6 +187,7 @@ namespace WpfTest {
         //前进按钮事件
         private void goahead_bt_Click(object sender, RoutedEventArgs e) {
             if (Ahead_History.Count != 0) {
+                if (address_box.IsReadOnly) address_box.IsReadOnly = false;//解锁输入框
                 //当前目录移入历史记录
                 Back_History.AddLast(CurrentPath);
                 //获取前进并移出
@@ -205,6 +213,7 @@ namespace WpfTest {
             Back_History.AddLast(CurrentPath);
             address_box.Text = "查找";
             CurrentPath = "查找";
+            //锁定两个输入框
             address_box.IsReadOnly = true;
             search_box.IsReadOnly = true;
 
@@ -217,7 +226,7 @@ namespace WpfTest {
             lb.Items.Clear();
             lb.EndInit();
             await MyFindManeger.AddLBItemByThreads(lb, path, cts.Token, pattern);
-            search_box.IsReadOnly = false;
+            search_box.IsReadOnly = false;//解锁一个输入框
         }
 
         //取消按钮点击事件
@@ -316,8 +325,49 @@ namespace WpfTest {
             FlushLBByCurrentPath();
         }
 
+        private void menu_open_Click(object sender, RoutedEventArgs e) {
+            //获取父路径
+            var lt = (lb.SelectedItem as MyListBoxItem);
+            string chooes = lt.MyMessage;
+            string parent = chooes.Substring(5);
+            if (chooes.Substring(0, 5) == "所在路径:") {
+                parent = chooes.Substring(5);
+                if (parent.Length > 3) parent = parent + "\\";
+                System.Diagnostics.Process.Start(parent+lt.MyText);
+            }
+            else {
+                //刷新关联的三控件
+                CurrentPath = parent;
+                address_box.Text = CurrentPath;
+                TVChangeByOther = true;
+                MyItemManager.GetTVItemFromPath(tv, parent, true);
+                TVChangeByOther = false;
+                FlushLBByCurrentPath();
+                address_box.IsReadOnly = false;//解锁输入框
+            }
+        }
 
+        private void menu_open_dir_Click(object sender, RoutedEventArgs e) {
+            //获取父路径
+            string chooes = (lb.SelectedItem as MyListBoxItem).MyMessage;
+            string parent;
+            if (chooes.Substring(0, 5) == "所在路径:")
+                parent = chooes.Substring(5);
+            else {
+                var reg = new System.Text.RegularExpressions.Regex(@".*(?:\\)");
+                var match = reg.Match(chooes, 5);
+                parent = match.Value;
+            }
+            if (parent.Length > 3) parent = parent + "\\";
 
-
+            //刷新关联的三控件
+            CurrentPath = parent;
+            address_box.Text = CurrentPath;
+            TVChangeByOther = true;
+            MyItemManager.GetTVItemFromPath(tv, parent, true);
+            TVChangeByOther = false;
+            FlushLBByCurrentPath();
+            address_box.IsReadOnly = false;//解锁输入框
+        }
     }
 }
