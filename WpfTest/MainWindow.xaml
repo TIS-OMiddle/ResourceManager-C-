@@ -81,6 +81,8 @@
 
             <ListBox.ContextMenu>
                 <ContextMenu Opened="ContextMenu_Opened">
+                    <MenuItem Name="menu_open" Header="打开"/>
+                    <MenuItem Name="menu_open_dir" Header="打开所在目录"/>
                     <MenuItem Name="menu_creat" Header="新建">
                         <MenuItem Name="menu_creat_file" Header="新建文本文件"/>
                         <MenuItem Name="menu_creat_dirs" Header="新建文件夹" Click="menu_creat_dirs_Click"/>

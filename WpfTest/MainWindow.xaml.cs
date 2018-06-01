@@ -110,7 +110,7 @@ namespace WpfTest {
         private void lb_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource.GetType() == typeof(ScrollViewer)) {
                 var item = lb.SelectedItem as MyListBoxItem;
-                if (item != null) {
+                if (item != null&&CurrentPath!="查找") {
                     FlushLBByCurrentPath();
                 }
                 lb.SelectedIndex = -1;
@@ -163,7 +163,9 @@ namespace WpfTest {
                 //获取历史记录并移出历史记录
                 string his = Back_History.Last.Value;
                 Back_History.RemoveLast();
-                Ahead_History.AddLast(CurrentPath);//当前目录移入前进
+                if (CurrentPath != "查找") {
+                    Ahead_History.AddLast(CurrentPath);//当前目录移入前进
+                }
                 CurrentPath = his;
                 address_box.Text = CurrentPath == "" ? "此电脑" : CurrentPath;
                 //刷新tv
@@ -194,9 +196,41 @@ namespace WpfTest {
             }
         }
 
+        //查找按钮点击事件
+        private CancellationTokenSource cts;
+        private async void find_bt_Click(object sender, RoutedEventArgs e) {
+            string pattern = "*" + search_box.Text + "*";
+            if (pattern == "**") return;
+            string path = CurrentPath;
+            Back_History.AddLast(CurrentPath);
+            address_box.Text = "查找";
+            CurrentPath = "查找";
+            address_box.IsReadOnly = true;
+            search_box.IsReadOnly = true;
+
+            if (CurrentPath == "") {
+                MessageBox.Show("请进入某个磁盘后搜索", "提示", MessageBoxButton.OK);
+                return;
+            }
+            cts = new CancellationTokenSource();
+            lb.BeginInit();
+            lb.Items.Clear();
+            lb.EndInit();
+            await MyFindManeger.AddLBItemByThreads(lb, path, cts.Token, pattern);
+            search_box.IsReadOnly = false;
+        }
+
+        //取消按钮点击事件
+        private void cancell_bt_Click(object sender, RoutedEventArgs e) {
+            cts.Cancel();
+        }
+
+
         //右键菜单显示事件
         private void ContextMenu_Opened(object sender, RoutedEventArgs e) {
-            if (CurrentPath == "") {
+            if (CurrentPath == "") {//根路径下右键
+                menu_open.Visibility = Visibility.Collapsed;
+                menu_open_dir.Visibility = Visibility.Collapsed;
                 menu_copy.IsEnabled = false;
                 menu_delete.IsEnabled = false;
                 menu_rename.IsEnabled = false;
@@ -205,7 +239,20 @@ namespace WpfTest {
 
                 menu_status.IsEnabled = true;
             }
-            else if (lb.SelectedItem==null) {
+            else if (CurrentPath=="查找") {//查找项目下右键
+                menu_open.Visibility = Visibility.Visible;
+                menu_open_dir.Visibility = Visibility.Visible;
+                menu_copy.IsEnabled = false;
+                menu_delete.IsEnabled = false;
+                menu_rename.IsEnabled = false;
+                menu_creat.IsEnabled = false;
+                menu_paste.IsEnabled = false;
+
+                menu_status.IsEnabled = true;
+            }
+            else if (lb.SelectedItem==null) {//空白处右键
+                menu_open.Visibility = Visibility.Collapsed;
+                menu_open_dir.Visibility = Visibility.Collapsed;
                 menu_copy.IsEnabled = false;
                 menu_delete.IsEnabled = false;
                 menu_rename.IsEnabled = false;
@@ -214,7 +261,9 @@ namespace WpfTest {
                 menu_creat.IsEnabled = true;
                 menu_paste.IsEnabled = true;
             }
-            else {
+            else {//正常右键lb项时
+                menu_open.Visibility = Visibility.Collapsed;
+                menu_open_dir.Visibility = Visibility.Collapsed;
                 menu_creat.IsEnabled = false;
                 menu_paste.IsEnabled = false;
 
@@ -268,25 +317,7 @@ namespace WpfTest {
         }
 
 
-        private CancellationTokenSource cts;
-        //查找按钮点击事件
-        private void find_bt_Click(object sender, RoutedEventArgs e) {
-            string path = CurrentPath;
-            if (CurrentPath == "") {
-                MessageBox.Show("请进入某个磁盘后搜索", "提示", MessageBoxButton.OK);
-                return;
-            }
-            string pattern = "*" + search_box.Text + "*";
-            cts = new CancellationTokenSource();
-            lb.BeginInit();
-            lb.Items.Clear();
-            lb.EndInit();
-            var i = MyFindManeger.AddLBItemByThreads(lb, path, cts.Token, pattern);
-        }
 
-        //取消按钮点击事件
-        private void cancell_bt_Click(object sender, RoutedEventArgs e) {
-            cts.Cancel();
-        }
+
     }
 }
