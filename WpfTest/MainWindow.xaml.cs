@@ -307,6 +307,12 @@ namespace WpfTest {
                 FlushLBByCurrentPath();
             }
             else if (Directory.Exists(_fileinfo)) {
+                //同步treeview显示
+                var it = MyItemManager.GetTVItemFromPath(tv, _fileinfo);
+                tv.BeginInit();
+                (it.Parent as MyTreeViewItem).Items.Remove(it);
+                tv.EndInit();
+
                 Directory.Delete(_fileinfo, true);
                 FlushLBByCurrentPath();
             }
@@ -314,14 +320,37 @@ namespace WpfTest {
 
         private void menu_creat_dirs_Click(object sender, RoutedEventArgs e) {
             string name = "新建文件夹";
+            string parent;
+            if (CurrentPath.Length < 4)
+                parent = CurrentPath;
+            else parent = CurrentPath + "\\";
+            while (Directory.Exists(parent+name)) {
+                name += " 副本";
+            }
+            Directory.CreateDirectory(parent+name);
+            FlushLBByCurrentPath();
+
+            //同步treeview显示
+            MyTreeViewItem mytv = new MyTreeViewItem(name, MyIcons.folder);
+            var it = MyItemManager.GetTVItemFromPath(tv, CurrentPath);
+            tv.BeginInit();
+            it.Items.Add(mytv);
+            tv.EndInit();
+        }
+
+        private void menu_creat_file_Click(object sender, RoutedEventArgs e) {
+            string name = "新建文本文档.txt";
             string _fileinfo;
             if (CurrentPath.Length < 4)
                 _fileinfo = CurrentPath + name;
             else _fileinfo = CurrentPath + "\\" + name;
-            while (Directory.Exists(_fileinfo)) {
-                _fileinfo += " 副本";
+            while (File.Exists(_fileinfo)) {
+                _fileinfo = _fileinfo.Insert(_fileinfo.Length - 4, " 副本");
             }
-            Directory.CreateDirectory(_fileinfo);
+            FileStream fs = new FileStream(_fileinfo, FileMode.Create);
+            StreamWriter sw = new StreamWriter(fs);
+            sw.WriteLine("");
+            sw.Close();
             FlushLBByCurrentPath();
         }
 
@@ -368,6 +397,48 @@ namespace WpfTest {
             TVChangeByOther = false;
             FlushLBByCurrentPath();
             address_box.IsReadOnly = false;//解锁输入框
+        }
+
+        private string copyPath = "";
+        private string copyName = "";
+        private void menu_copy_Click(object sender, RoutedEventArgs e) {
+            string path = CurrentPath;
+            if (path.Length > 3) {//当前路径加斜杠
+                path += "\\";
+            }
+            copyPath = path;
+            var m = (MyListBoxItem)lb.SelectedItem;
+            copyName = m.MyText;
+        }
+
+        private void menu_paste_Click(object sender, RoutedEventArgs e) {
+            //存在右键复制点击过
+            if (copyPath != "") {
+                string path = CurrentPath;
+                if (path.Length > 3) {//当前路径加斜杠
+                    path += "\\";
+                }
+
+                if (copyName.IndexOf('.') != -1) {//复制文件
+                                                  //文件已出现
+                    if (File.Exists(CurrentPath + copyName)) {
+                        var confirm = MessageBox.Show(copyName + "已经存在，是否替换?", "复制文件提示",
+                            MessageBoxButton.YesNo);
+                        if (confirm == MessageBoxResult.Yes) {
+                            (new FileInfo(copyPath + copyName)).CopyTo(path + copyName, true);
+                            return;
+                        }
+                    }
+                    else {//文件未出现
+                        (new FileInfo(copyPath + copyName)).CopyTo(path + copyName);
+                    }
+                }
+                else {//复制目录
+                    
+                }
+
+                FlushLBByCurrentPath();
+            }
         }
     }
 }

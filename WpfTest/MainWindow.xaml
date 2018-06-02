@@ -84,11 +84,11 @@
                     <MenuItem Name="menu_open" Header="打开" Click="menu_open_Click"/>
                     <MenuItem Name="menu_open_dir" Header="打开所在目录" Click="menu_open_dir_Click"/>
                     <MenuItem Name="menu_creat" Header="新建">
-                        <MenuItem Name="menu_creat_file" Header="新建文本文件"/>
+                        <MenuItem Name="menu_creat_file" Header="新建文本文档" Click="menu_creat_file_Click"/>
                         <MenuItem Name="menu_creat_dirs" Header="新建文件夹" Click="menu_creat_dirs_Click"/>
                     </MenuItem>
-                    <MenuItem Name="menu_copy" Header="复制"/>
-                    <MenuItem Name="menu_paste" Header="粘贴"/>
+                    <MenuItem Name="menu_copy" Header="复制" Click="menu_copy_Click"/>
+                    <MenuItem Name="menu_paste" Header="粘贴" Click="menu_paste_Click"/>
                     <MenuItem Name="menu_delete" Header="删除" Click="menu_delete_Click"/>
                     <MenuItem Name="menu_rename" Header="重命名" Click="menu_rename_Click"/>
                     <MenuItem Name="menu_status" Header="属性"/>
