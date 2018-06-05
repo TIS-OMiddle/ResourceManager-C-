@@ -74,13 +74,12 @@ namespace WpfTest {
                 }
 
                 //处理当前路径+双击项
-                if (CurrentPath == "") {//双击项为盘符，加上双击项
+                if (CurrentPath == "") {//双击项为盘符
                     CurrentPath = filename.Substring(filename.Length - 3, 2) + "\\";
                 }
                 else if (CurrentPath.Length < 4) {//当前路径为盘符，不加斜杠
                     if (File.Exists(CurrentPath + filename)) {//双击项为文件
                         System.Diagnostics.Process.Start(CurrentPath + filename);
-                        return;
                     }
                     else {
                         Back_History.AddLast(CurrentPath);//记录进栈
@@ -89,7 +88,7 @@ namespace WpfTest {
                 }
                 else {//当前路径不为盘符加斜杠
                     if (File.Exists(CurrentPath + "\\" + filename)) {//双击项为文件
-                        System.Diagnostics.Process.Start(CurrentPath + filename);
+                        System.Diagnostics.Process.Start(CurrentPath + "\\" + filename);
                         return;
                     }
                     else {
