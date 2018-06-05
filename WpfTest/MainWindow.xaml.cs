@@ -88,18 +88,17 @@ namespace WpfTest {
                     }
                 }
                 else {//当前路径不为盘符加斜杠
-                    CurrentPath = CurrentPath + "\\";
-                    if (File.Exists(CurrentPath + filename)) {//双击项为文件
+                    if (File.Exists(CurrentPath + "\\" + filename)) {//双击项为文件
                         System.Diagnostics.Process.Start(CurrentPath + filename);
                         return;
                     }
                     else {
                         Back_History.AddLast(CurrentPath);//记录进栈
-                        CurrentPath += filename;//双击项为目录
+                        CurrentPath += "\\" + filename;//双击项为目录
                     }
                 }
                 //刷新listbox
-                FlushLBByCurrentPath();
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
                 //刷新地址栏
                 address_box.Text = CurrentPath;
                 //使treeview选中项同步变化
@@ -117,20 +116,10 @@ namespace WpfTest {
             if (e.OriginalSource.GetType() == typeof(ScrollViewer)) {
                 var item = lb.SelectedItem as MyListBoxItem;
                 if (item != null&&CurrentPath!="查找") {
-                    FlushLBByCurrentPath();
+                    MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
                 }
                 lb.SelectedIndex = -1;
             }
-        }
-
-        //由CurrentPath变量刷新listbox
-        private void FlushLBByCurrentPath() {
-            lb.BeginInit();
-            var list = MyItemManager.CreatLBItemFromPath(CurrentPath);
-            lb.Items.Clear();
-            foreach (var i in list)
-                lb.Items.Add(i);
-            lb.EndInit();
         }
 
         //lisibox键盘，监控快捷键事件
@@ -157,7 +146,7 @@ namespace WpfTest {
                         File.Move(copyParent + oldname, copyParent + newname);
                     else Directory.Move(copyParent + oldname, copyParent + newname);
                     item.MyVisialbe = Visibility.Hidden;
-                    FlushLBByCurrentPath();
+                    MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
                 }
             }
             catch (Exception) { }
@@ -180,7 +169,7 @@ namespace WpfTest {
                 MyItemManager.GetTVItemFromPath(tv, his, true);
                 TVChangeByOther = false;
                 //刷新listbox
-                FlushLBByCurrentPath();
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
             }
         }
 
@@ -200,7 +189,7 @@ namespace WpfTest {
                 //刷新listbox
                 CurrentPath = go;
                 address_box.Text = CurrentPath == "" ? "此电脑" : CurrentPath;
-                FlushLBByCurrentPath();
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
             }
         }
 
@@ -225,7 +214,7 @@ namespace WpfTest {
             lb.BeginInit();
             lb.Items.Clear();
             lb.EndInit();
-            await MyFindManeger.AddLBItemByThreads(lb, path, cts.Token, pattern);
+            await MyFindManager.AddLBItemByThreads(lb, path, cts.Token, pattern);
             search_box.IsReadOnly = false;//解锁一个输入框
         }
 
@@ -233,7 +222,6 @@ namespace WpfTest {
         private void cancell_bt_Click(object sender, RoutedEventArgs e) {
             cts.Cancel();
         }
-
 
         //右键菜单显示事件
         private void ContextMenu_Opened(object sender, RoutedEventArgs e) {
@@ -304,7 +292,7 @@ namespace WpfTest {
 
             if (File.Exists(_fileinfo)) {
                 File.Delete(_fileinfo);
-                FlushLBByCurrentPath();
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
             }
             else if (Directory.Exists(_fileinfo)) {
                 //同步treeview显示
@@ -314,7 +302,7 @@ namespace WpfTest {
                 tv.EndInit();
 
                 Directory.Delete(_fileinfo, true);
-                FlushLBByCurrentPath();
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
             }
         }
 
@@ -328,7 +316,7 @@ namespace WpfTest {
                 name += " 副本";
             }
             Directory.CreateDirectory(parent+name);
-            FlushLBByCurrentPath();
+            MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
 
             //同步treeview显示
             MyTreeViewItem mytv = new MyTreeViewItem(name, MyIcons.folder);
@@ -351,7 +339,7 @@ namespace WpfTest {
             StreamWriter sw = new StreamWriter(fs);
             sw.WriteLine("");
             sw.Close();
-            FlushLBByCurrentPath();
+            MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
         }
 
         private void menu_open_Click(object sender, RoutedEventArgs e) {
@@ -371,7 +359,7 @@ namespace WpfTest {
                 TVChangeByOther = true;
                 MyItemManager.GetTVItemFromPath(tv, parent, true);
                 TVChangeByOther = false;
-                FlushLBByCurrentPath();
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
                 address_box.IsReadOnly = false;//解锁输入框
             }
         }
@@ -395,49 +383,48 @@ namespace WpfTest {
             TVChangeByOther = true;
             MyItemManager.GetTVItemFromPath(tv, parent, true);
             TVChangeByOther = false;
-            FlushLBByCurrentPath();
+            MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
             address_box.IsReadOnly = false;//解锁输入框
         }
 
-        private string copyPath = "";
-        private string copyName = "";
         private void menu_copy_Click(object sender, RoutedEventArgs e) {
             string path = CurrentPath;
             if (path.Length > 3) {//当前路径加斜杠
                 path += "\\";
             }
-            copyPath = path;
             var m = (MyListBoxItem)lb.SelectedItem;
-            copyName = m.MyText;
+            path += m.MyText;
+
+            System.Collections.Specialized.StringCollection strcoll = new System.Collections.Specialized.StringCollection();
+            strcoll.Add(path);
+            Clipboard.SetFileDropList(strcoll);
         }
 
         private void menu_paste_Click(object sender, RoutedEventArgs e) {
-            //存在右键复制点击过
-            if (copyPath != "") {
-                string path = CurrentPath;
-                if (path.Length > 3) {//当前路径加斜杠
-                    path += "\\";
-                }
-
-                if (copyName.IndexOf('.') != -1) {//复制文件
-                                                  //文件已出现
-                    if (File.Exists(CurrentPath + copyName)) {
-                        var confirm = MessageBox.Show(copyName + "已经存在，是否替换?", "复制文件提示",
-                            MessageBoxButton.YesNo);
-                        if (confirm == MessageBoxResult.Yes) {
-                            (new FileInfo(copyPath + copyName)).CopyTo(path + copyName, true);
-                            return;
+            try {
+                if (Clipboard.ContainsFileDropList()) {
+                    var list = Clipboard.GetFileDropList();
+                    foreach(var i in list) {
+                        if (File.Exists(i)) {
+                            MyCopyManager.CopyFile(i, CurrentPath);
+                        }
+                        else if (Directory.Exists(i)) {
+                            MyCopyManager.CopyFolder(i, CurrentPath);
+                            var item = (tv.SelectedItem as MyTreeViewItem).Items;
+                            string n = i.Substring(i.LastIndexOf('\\') + 1);
+                            tv.BeginInit();
+                            item.Add(new MyTreeViewItem(n, MyIcons.folder));
+                            tv.EndInit();
                         }
                     }
-                    else {//文件未出现
-                        (new FileInfo(copyPath + copyName)).CopyTo(path + copyName);
-                    }
                 }
-                else {//复制目录
-                    
-                }
-
-                FlushLBByCurrentPath();
+                else MessageBox.Show("尚未有复制的文件(夹)", "复制错误");
+            }
+            catch (Exception ee) {
+                MessageBox.Show(ee.Message, "复制错误");
+            }
+            finally {
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
             }
         }
     }
