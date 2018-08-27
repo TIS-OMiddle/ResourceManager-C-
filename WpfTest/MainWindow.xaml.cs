@@ -22,8 +22,10 @@ namespace WpfTest {
     /// </summary>
     public partial class MainWindow : Window {
 
-        private string CurrentPath = "";
-        private bool TVChangeByOther = false;
+        private string CurrentPath = "";//表示当前路径
+        private bool TVChangeByOther = false;//防止从代码误操作treeview
+        private bool isCut = false;//表示复制还是剪切
+        //历史纪录前进后退的储存结构
         private LinkedList<string> Back_History = new LinkedList<string>();
         private LinkedList<string> Ahead_History = new LinkedList<string>();
 
@@ -31,6 +33,7 @@ namespace WpfTest {
             InitializeComponent();
         }
 
+        //窗口加载时初始化
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             tv.BeginInit();
             MyTreeViewItem root = MyItemManager.GetRootTVItem();
@@ -46,11 +49,7 @@ namespace WpfTest {
             Back_History.AddLast(CurrentPath);//记录进栈
             MyTreeViewItem my_select = (MyTreeViewItem)tv.SelectedItem;
             CurrentPath = my_select.Tag.ToString();
-            if (my_select.Items.IsEmpty) {
-                tv.BeginInit();
-                MyItemManager.CreatSubTVItemFromTVItem(my_select);
-                tv.EndInit();
-            }
+
             List<MyListBoxItem> list = MyItemManager.CreatLBItemFromPath(CurrentPath);
             lb.BeginInit();
             lb.Items.Clear();
@@ -63,7 +62,7 @@ namespace WpfTest {
 
         //listbox双击进入或打开事件
         private void lb_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            if (e.OriginalSource.GetType() != typeof(ScrollViewer)&&e.RightButton!=MouseButtonState.Pressed) {
+            if (e.OriginalSource.GetType() != typeof(ScrollViewer) && e.RightButton != MouseButtonState.Pressed) {
                 var m = (MyListBoxItem)lb.SelectedItem;
                 string filename = m.MyText;
 
@@ -114,7 +113,7 @@ namespace WpfTest {
         private void lb_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource.GetType() == typeof(ScrollViewer)) {
                 var item = lb.SelectedItem as MyListBoxItem;
-                if (item != null&&CurrentPath!="查找") {
+                if (item != null && CurrentPath != "查找") {
                     MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
                 }
                 lb.SelectedIndex = -1;
@@ -193,8 +192,12 @@ namespace WpfTest {
         }
 
         //查找按钮点击事件
-        private CancellationTokenSource cts;
+        private CancellationTokenSource cts = new CancellationTokenSource();
         private async void find_bt_Click(object sender, RoutedEventArgs e) {
+            if (CurrentPath == "") {
+                MessageBox.Show("暂不支持全盘搜索", "抱歉");
+                return;
+            }
             string pattern = "*" + search_box.Text + "*";
             if (pattern == "**") return;
             string path = CurrentPath;
@@ -222,40 +225,38 @@ namespace WpfTest {
             cts.Cancel();
         }
 
-        //右键菜单显示事件
+        //右键菜单各项目显示事件
         private void ContextMenu_Opened(object sender, RoutedEventArgs e) {
             if (CurrentPath == "") {//根路径下右键
                 menu_open.Visibility = Visibility.Collapsed;
                 menu_open_dir.Visibility = Visibility.Collapsed;
+                menu_cut.IsEnabled = false;
                 menu_copy.IsEnabled = false;
                 menu_delete.IsEnabled = false;
                 menu_rename.IsEnabled = false;
                 menu_creat.IsEnabled = false;
                 menu_paste.IsEnabled = false;
-
-                menu_status.IsEnabled = true;
             }
-            else if (CurrentPath=="查找") {//查找项目下右键
+            else if (CurrentPath == "查找") {//查找项目下右键
                 menu_open.Visibility = Visibility.Visible;
                 menu_open_dir.Visibility = Visibility.Visible;
+                menu_cut.IsEnabled = false;
                 menu_copy.IsEnabled = false;
                 menu_delete.IsEnabled = false;
                 menu_rename.IsEnabled = false;
                 menu_creat.IsEnabled = false;
                 menu_paste.IsEnabled = false;
-
-                menu_status.IsEnabled = true;
             }
-            else if (lb.SelectedItem==null) {//空白处右键
+            else if (lb.SelectedItem == null) {//空白处右键
                 menu_open.Visibility = Visibility.Collapsed;
                 menu_open_dir.Visibility = Visibility.Collapsed;
                 menu_copy.IsEnabled = false;
                 menu_delete.IsEnabled = false;
                 menu_rename.IsEnabled = false;
-                menu_status.IsEnabled = false;
+                menu_cut.IsEnabled = false;
 
                 menu_creat.IsEnabled = true;
-                menu_paste.IsEnabled = true;
+                menu_paste.IsEnabled = Clipboard.ContainsFileDropList();
             }
             else {//正常右键lb项时
                 menu_open.Visibility = Visibility.Collapsed;
@@ -263,10 +264,10 @@ namespace WpfTest {
                 menu_creat.IsEnabled = false;
                 menu_paste.IsEnabled = false;
 
+                menu_cut.IsEnabled = true;
                 menu_copy.IsEnabled = true;
                 menu_delete.IsEnabled = true;
                 menu_rename.IsEnabled = true;
-                menu_status.IsEnabled = true;
             }
         }
 
@@ -285,7 +286,7 @@ namespace WpfTest {
                 _fileinfo = CurrentPath + name;
             else _fileinfo = CurrentPath + "\\" + name;
 
-            var dr = MessageBox.Show("您确认要删除吗?", "删除",MessageBoxButton.YesNo);
+            var dr = MessageBox.Show("您确认要删除吗?", "删除", MessageBoxButton.YesNo);
             if (dr == MessageBoxResult.No)
                 return;
 
@@ -311,10 +312,10 @@ namespace WpfTest {
             if (CurrentPath.Length < 4)
                 parent = CurrentPath;
             else parent = CurrentPath + "\\";
-            while (Directory.Exists(parent+name)) {
+            while (Directory.Exists(parent + name)) {
                 name += " 副本";
             }
-            Directory.CreateDirectory(parent+name);
+            Directory.CreateDirectory(parent + name);
             MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
 
             //同步treeview显示
@@ -349,7 +350,7 @@ namespace WpfTest {
             if (chooes.Substring(0, 5) == "所在路径:") {
                 parent = chooes.Substring(5);
                 if (parent.Length > 3) parent = parent + "\\";
-                System.Diagnostics.Process.Start(parent+lt.MyText);
+                System.Diagnostics.Process.Start(parent + lt.MyText);
             }
             else {
                 //刷新关联的三控件
@@ -386,24 +387,50 @@ namespace WpfTest {
             address_box.IsReadOnly = false;//解锁输入框
         }
 
+        private void menu_cut_Click(object sender, RoutedEventArgs e) {
+            copyToClipboard();
+            isCut = true;
+        }
+
         private void menu_copy_Click(object sender, RoutedEventArgs e) {
+            copyToClipboard();
+            isCut = false;
+        }
+
+        private void menu_paste_Click(object sender, RoutedEventArgs e) {
+            if (isCut) {
+                toCut();
+                Clipboard.Clear();
+                isCut = false;
+            }
+            else {
+                toCopy();
+                isCut = false;
+            }
+        }
+
+        //复制选定内容至剪切板
+        private void copyToClipboard() {
             string path = CurrentPath;
             if (path.Length > 3) {//当前路径加斜杠
                 path += "\\";
             }
-            var m = (MyListBoxItem)lb.SelectedItem;
-            path += m.MyText;
-
             System.Collections.Specialized.StringCollection strcoll = new System.Collections.Specialized.StringCollection();
-            strcoll.Add(path);
-            Clipboard.SetFileDropList(strcoll);
+            foreach (var item in lb.SelectedItems) {
+                var m = (MyListBoxItem)item;
+                string p = path + m.MyText;
+                strcoll.Add(p);
+            }
+            if (strcoll.Count != 0)
+                Clipboard.SetFileDropList(strcoll);
         }
 
-        private void menu_paste_Click(object sender, RoutedEventArgs e) {
+        //粘贴到当前路径
+        private void toCopy() {
             try {
                 if (Clipboard.ContainsFileDropList()) {
                     var list = Clipboard.GetFileDropList();
-                    foreach(var i in list) {
+                    foreach (var i in list) {
                         if (File.Exists(i)) {
                             MyCopyManager.CopyFile(i, CurrentPath);
                         }
@@ -418,6 +445,39 @@ namespace WpfTest {
                     }
                 }
                 else MessageBox.Show("尚未有复制的文件(夹)", "复制错误");
+            }
+            catch (Exception ee) {
+                MessageBox.Show(ee.Message, "复制错误");
+            }
+            finally {
+                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
+            }
+        }
+
+        //剪切到当前路径
+        private void toCut() {
+            try {
+                string path = CurrentPath.Length > 3 ? CurrentPath : CurrentPath.Substring(0, 2);
+                if (Clipboard.ContainsFileDropList()) {
+                    var list = Clipboard.GetFileDropList();
+                    foreach (var i in list) {
+                        if (File.Exists(i)) {
+                            FileInfo file = new FileInfo(i);
+                            string name = i.Substring(i.LastIndexOf('\\') + 1);
+                            file.MoveTo(path+'\\'+name);
+                        }
+                        else if (Directory.Exists(i)) {
+                            DirectoryInfo dir = new DirectoryInfo(i);
+                            string name = i.Substring(i.LastIndexOf('\\') + 1);
+                            dir.MoveTo(path+"\\"+name);
+                            var item = (tv.SelectedItem as MyTreeViewItem).Items;
+                            string n = i.Substring(i.LastIndexOf('\\') + 1);
+                            tv.BeginInit();
+                            item.Add(new MyTreeViewItem(n, MyIcons.folder));
+                            tv.EndInit();
+                        }
+                    }
+                }
             }
             catch (Exception ee) {
                 MessageBox.Show(ee.Message, "复制错误");

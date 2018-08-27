@@ -6,9 +6,9 @@
         xmlns:local="clr-namespace:WpfTest"
         xmlns:mycon="clr-namespace:MyControlItem;assembly=MyControlItem"
         mc:Ignorable="d"
-        Title="WPF界面开发测试" Height="400" Width="600" MinWidth="400" MinHeight="200"
+        Title="资源管理器" Height="600" Width="800" MinWidth="400" MinHeight="200"
         Loaded="Window_Loaded">
-    
+
     <Window.Resources>
         <mycon:StringformatConvert x:Key="stringConvert"/>
         <Style x:Key="RenameStyle" TargetType="{x:Type TextBox}">
@@ -37,64 +37,76 @@
             </DataTemplate>
         </Grid.Resources>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150" MinWidth="50" MaxWidth="350"></ColumnDefinition>
-            <ColumnDefinition Width="3"></ColumnDefinition>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <GridSplitter HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1"/>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
-            <Button Name="goback_bt" Height="50" Margin="5,0,5,0" Click="goback_bt_Click">后退</Button>
-            <Button Name="goahead_bt" Height="50" Margin="5,0,5,0" Click="goahead_bt_Click">前进</Button>
-        </StackPanel>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <StackPanel  Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Height="40">
-            <Button Name="find_bt" Width="50" Click="find_bt_Click">查找</Button>
-            <Button Name="cancell_bt" Width="50" Click="cancell_bt_Click">取消</Button>
-            <TextBox Name="search_box" Width="200" Height="20"/>
-        </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                <Button Name="goback_bt" Height="50" Margin="25,0,5,0" Click="goback_bt_Click">后退</Button>
+                <Button Name="goahead_bt" Height="50" Margin="10,0,5,0" Click="goahead_bt_Click">前进</Button>
+            </StackPanel>
 
-        <TextBox Name="address_box" Grid.Row="0" Grid.ColumnSpan="3" Grid.Column="0"
-                 Width="400" Height="20" VerticalAlignment="Top" Margin="10,5,0,0"/>
+            <TextBox Name="address_box" Grid.Column="1" Background="LightGray" Height="20" VerticalAlignment="Top" Margin="5,25,10,0"/>
+            <Grid Grid.Column="2">
+                <StackPanel Orientation="Vertical" Height="40" Width="150" Grid.Column="1" Margin="0,10,0,0">
+                    <TextBox Name="search_box" Width="150" Height="20" Background="LightCyan"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Name="find_bt" Width="50" Click="find_bt_Click">查找</Button>
+                        <Button Name="cancell_bt" Width="50" Click="cancell_bt_Click">取消</Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
 
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" MinWidth="50" MaxWidth="750"></ColumnDefinition>
+                <ColumnDefinition Width="5"></ColumnDefinition>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <GridSplitter HorizontalAlignment="Stretch" Grid.Column="1"/>
 
-        <TreeView Name="tv" Grid.Column="0"  Grid.Row="1" 
+            <TreeView Name="tv" Grid.Column="0"
                   SelectedItemChanged="tv_SelectedItemChanged"></TreeView>
-        
-        <ListBox Name="lb" Grid.Column="2" Grid.Row="1" ItemTemplate="{StaticResource MyListBoxTemplate}"
+
+            <ListBox Name="lb" Grid.Column="2" ItemTemplate="{StaticResource MyListBoxTemplate}"
                  SelectionMode="Extended" Background="Transparent"
                  MouseDoubleClick="lb_MouseDoubleClick"
                  PreviewMouseDown="lb_PreviewMouseDown"
                  KeyDown="lb_KeyDown">
-            <ListBox.Template>
-                <ControlTemplate TargetType="{x:Type ListBox}">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <WrapPanel Orientation="Horizontal" IsItemsHost="True" ScrollViewer.CanContentScroll="True"/>
-                    </ScrollViewer>
-                </ControlTemplate>
-            </ListBox.Template>
+                <ListBox.Template>
+                    <ControlTemplate TargetType="{x:Type ListBox}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <WrapPanel Orientation="Horizontal" IsItemsHost="True" ScrollViewer.CanContentScroll="True"/>
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ListBox.Template>
 
-            <ListBox.ContextMenu>
-                <ContextMenu Opened="ContextMenu_Opened">
-                    <MenuItem Name="menu_open" Header="打开" Click="menu_open_Click"/>
-                    <MenuItem Name="menu_open_dir" Header="打开所在目录" Click="menu_open_dir_Click"/>
-                    <MenuItem Name="menu_creat" Header="新建">
-                        <MenuItem Name="menu_creat_file" Header="新建文本文档" Click="menu_creat_file_Click"/>
-                        <MenuItem Name="menu_creat_dirs" Header="新建文件夹" Click="menu_creat_dirs_Click"/>
-                    </MenuItem>
-                    <MenuItem Name="menu_copy" Header="复制" Click="menu_copy_Click"/>
-                    <MenuItem Name="menu_paste" Header="粘贴" Click="menu_paste_Click"/>
-                    <MenuItem Name="menu_delete" Header="删除" Click="menu_delete_Click"/>
-                    <MenuItem Name="menu_rename" Header="重命名" Click="menu_rename_Click"/>
-                    <MenuItem Name="menu_status" Header="属性"/>
-                </ContextMenu>
-            </ListBox.ContextMenu>
-        </ListBox>
+                <ListBox.ContextMenu>
+                    <ContextMenu Opened="ContextMenu_Opened">
+                        <MenuItem Name="menu_open" Header="打开" Click="menu_open_Click"/>
+                        <MenuItem Name="menu_open_dir" Header="打开所在目录" Click="menu_open_dir_Click"/>
+                        <MenuItem Name="menu_creat" Header="新建">
+                            <MenuItem Name="menu_creat_file" Header="新建文本文档" Click="menu_creat_file_Click"/>
+                            <MenuItem Name="menu_creat_dirs" Header="新建文件夹" Click="menu_creat_dirs_Click"/>
+                        </MenuItem>
+                        <MenuItem Name="menu_copy" Header="复制" Click="menu_copy_Click"/>
+                        <MenuItem Name="menu_cut" Header="剪切" Click="menu_cut_Click"/>
+                        <MenuItem Name="menu_paste" Header="粘贴" Click="menu_paste_Click"/>
+                        <MenuItem Name="menu_delete" Header="删除" Click="menu_delete_Click"/>
+                        <MenuItem Name="menu_rename" Header="重命名" Click="menu_rename_Click"/>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+            </ListBox>
+        </Grid>
 
     </Grid>
 </Window>
