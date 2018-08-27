@@ -198,12 +198,12 @@ namespace WpfTest {
                 MessageBox.Show("暂不支持全盘搜索", "抱歉");
                 return;
             }
+            if (address_box.Text == "查找") return;
             string pattern = "*" + search_box.Text + "*";
             if (pattern == "**") return;
             string path = CurrentPath;
             Back_History.AddLast(CurrentPath);
             address_box.Text = "查找";
-            CurrentPath = "查找";
             //锁定两个输入框
             address_box.IsReadOnly = true;
             search_box.IsReadOnly = true;
@@ -279,31 +279,37 @@ namespace WpfTest {
         }
 
         private void menu_delete_Click(object sender, RoutedEventArgs e) {
-            var item = lb.SelectedItem as MyListBoxItem;
-            string name = item.MyText;
-            string _fileinfo;
-            if (CurrentPath.Length < 4)
-                _fileinfo = CurrentPath + name;
-            else _fileinfo = CurrentPath + "\\" + name;
+            try {
+                var item = lb.SelectedItem as MyListBoxItem;
+                string name = item.MyText;
+                string _fileinfo;
+                if (CurrentPath.Length < 4)
+                    _fileinfo = CurrentPath + name;
+                else _fileinfo = CurrentPath + "\\" + name;
 
-            var dr = MessageBox.Show("您确认要删除吗?", "删除", MessageBoxButton.YesNo);
-            if (dr == MessageBoxResult.No)
-                return;
+                var dr = MessageBox.Show("您确认要删除吗?", "删除", MessageBoxButton.YesNo);
+                if (dr == MessageBoxResult.No)
+                    return;
 
-            if (File.Exists(_fileinfo)) {
-                File.Delete(_fileinfo);
-                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
+                if (File.Exists(_fileinfo)) {
+                    File.Delete(_fileinfo);
+                    MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
+                }
+                else if (Directory.Exists(_fileinfo)) {
+                    //同步treeview显示
+                    var it = MyItemManager.GetTVItemFromPath(tv, _fileinfo);
+                    tv.BeginInit();
+                    (it.Parent as MyTreeViewItem).Items.Remove(it);
+                    tv.EndInit();
+
+                    Directory.Delete(_fileinfo, true);
+                    MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
+                }
             }
-            else if (Directory.Exists(_fileinfo)) {
-                //同步treeview显示
-                var it = MyItemManager.GetTVItemFromPath(tv, _fileinfo);
-                tv.BeginInit();
-                (it.Parent as MyTreeViewItem).Items.Remove(it);
-                tv.EndInit();
-
-                Directory.Delete(_fileinfo, true);
-                MyItemManager.FlushLBByCurrentPath(lb, CurrentPath);
+            catch (Exception ex) {
+                MessageBox.Show(ex.Message, "致命错误");
             }
+
         }
 
         private void menu_creat_dirs_Click(object sender, RoutedEventArgs e) {
@@ -464,12 +470,12 @@ namespace WpfTest {
                         if (File.Exists(i)) {
                             FileInfo file = new FileInfo(i);
                             string name = i.Substring(i.LastIndexOf('\\') + 1);
-                            file.MoveTo(path+'\\'+name);
+                            file.MoveTo(path + '\\' + name);
                         }
                         else if (Directory.Exists(i)) {
                             DirectoryInfo dir = new DirectoryInfo(i);
                             string name = i.Substring(i.LastIndexOf('\\') + 1);
-                            dir.MoveTo(path+"\\"+name);
+                            dir.MoveTo(path + "\\" + name);
                             var item = (tv.SelectedItem as MyTreeViewItem).Items;
                             string n = i.Substring(i.LastIndexOf('\\') + 1);
                             tv.BeginInit();
