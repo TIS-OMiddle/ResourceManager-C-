@@ -1,0 +1,12 @@
+F:\Project\MyControlItem\MyControlItem\bin\Debug\MyControlItem.xml
+F:\Project\MyControlItem\MyControlItem\bin\Debug\MyControlItem.dll
+F:\Project\MyControlItem\MyControlItem\bin\Debug\MyControlItem.pdb
+F:\Project\MyControlItem\MyControlItem\obj\Debug\MyControlItem.csprojResolveAssemblyReference.cache
+F:\Project\MyControlItem\MyControlItem\obj\Debug\MyControlItem.dll
+F:\Project\MyControlItem\MyControlItem\obj\Debug\MyControlItem.pdb
+F:\Project\explorer\ResourceManager\MyControlItem\MyControlItem\bin\Debug\MyControlItem.xml
+F:\Project\explorer\ResourceManager\MyControlItem\MyControlItem\bin\Debug\MyControlItem.dll
+F:\Project\explorer\ResourceManager\MyControlItem\MyControlItem\bin\Debug\MyControlItem.pdb
+F:\Project\explorer\ResourceManager\MyControlItem\MyControlItem\obj\Debug\MyControlItem.csprojResolveAssemblyReference.cache
+F:\Project\explorer\ResourceManager\MyControlItem\MyControlItem\obj\Debug\MyControlItem.dll
+F:\Project\explorer\ResourceManager\MyControlItem\MyControlItem\obj\Debug\MyControlItem.pdb

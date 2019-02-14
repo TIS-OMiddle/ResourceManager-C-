@@ -1,0 +1,250 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MyControlItem</name>
+    </assembly>
+    <members>
+        <member name="T:MyControlItem.StringformatConvert">
+            <summary>
+            自定义转换器，文件名过长时缩短显示
+            </summary>
+        </member>
+        <member name="M:MyControlItem.StringformatConvert.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            系统调用的函数
+            </summary>
+            <param name="value"></param>
+            <param name="targetType"></param>
+            <param name="parameter"></param>
+            <param name="culture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MyControlItem.StringformatConvert.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            回调转换，由于已有数据绑定，此处不使用
+            </summary>
+            <param name="value"></param>
+            <param name="targetType"></param>
+            <param name="parameter"></param>
+            <param name="culture"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MyControlItem.MyIcons">
+            <summary>
+            用于选择图标的枚举
+            </summary>
+        </member>
+        <member name="F:MyControlItem.MyIcons.folder">
+            <summary>
+            文件夹图标
+            </summary>
+        </member>
+        <member name="F:MyControlItem.MyIcons.disk">
+            <summary>
+            磁盘图标
+            </summary>
+        </member>
+        <member name="F:MyControlItem.MyIcons.file">
+            <summary>
+            文件图标
+            </summary>
+        </member>
+        <member name="T:MyControlItem.MyIconResourse">
+            <summary>
+            加载icon文件夹下的图标
+            </summary>
+        </member>
+        <member name="T:MyControlItem.MyListBoxItem">
+            <summary>
+            带有图标-文本-隐藏文本-悬浮显示文本的用于listbox的重载子控件
+            </summary>
+        </member>
+        <member name="P:MyControlItem.MyListBoxItem.MyIcon">
+            <summary>
+            显示的图标
+            </summary>
+        </member>
+        <member name="P:MyControlItem.MyListBoxItem.MyText">
+            <summary>
+            显示的文本
+            </summary>
+        </member>
+        <member name="P:MyControlItem.MyListBoxItem.MyMessage">
+            <summary>
+            悬浮的文本
+            </summary>
+        </member>
+        <member name="P:MyControlItem.MyListBoxItem.MyVisialbe">
+            <summary>
+            设置可见性
+            </summary>
+        </member>
+        <member name="M:MyControlItem.MyListBoxItem.#ctor(System.String,MyControlItem.MyIcons)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="text">显示的文本</param>
+            <param name="icon">显示的图标</param>
+        </member>
+        <member name="T:MyControlItem.MyTreeViewItem">
+            <summary>
+            带有图标-文本的用于treeview的重载子控件
+            </summary>
+        </member>
+        <member name="M:MyControlItem.MyTreeViewItem.#ctor">
+            <summary>
+            默认构造方法，没有任何内容
+            </summary>
+        </member>
+        <member name="M:MyControlItem.MyTreeViewItem.#ctor(System.String,MyControlItem.MyIcons)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="text">显示的文本</param>
+            <param name="icon">显示的图标</param>
+        </member>
+        <member name="P:MyControlItem.MyTreeViewItem.HeaderText">
+            <summary>
+            显示的文本
+            </summary>
+        </member>
+        <member name="P:MyControlItem.MyTreeViewItem.HeaderIcon">
+            <summary>
+            显示的图标
+            </summary>
+        </member>
+        <member name="T:MyControlItem.MyItemManager">
+            <summary>
+            自定义控件管理，提供由路径获取对应控件的各种方法
+            </summary>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.CreatLBItemFromPath(System.String)">
+            <summary>
+            根据指定路径返回listboxItem集合
+            </summary>
+            <param name="path">指定路径</param>
+            <returns>listboxItem集合</returns>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.CreatSubTVItemFromTVItem(MyControlItem.MyTreeViewItem)">
+            <summary>
+            生成指定结点的至其二级子结点
+            </summary>
+            <param name="item">指定结点</param>
+        </member>
+        <member name="M:MyControlItem.MyItemManager._CreatSubTVItemFromTVItem(MyControlItem.MyTreeViewItem)">
+            <summary>
+            生成指定结点的子结点
+            </summary>
+            <param name="item">指定结点</param>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.GetTVItemFromPath(System.Windows.Controls.TreeView,System.String,System.Boolean)">
+            <summary>
+            返回代表指定路径的treeviewItem，不存在时自动为该路径创建结点
+            </summary>
+            <param name="tv"></param>
+            <param name="path">指定的路径</param>
+            <param name="changeSelected">是否设置为被选中项，默认false</param>
+            <returns>对应结点</returns>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.IsRunAsAdmin">
+            <summary>
+            判断是否以管理员权限运行
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.GetRootTVItem">
+            <summary>
+            返回treeview的根结点
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.UpdateByFileInfos(System.Windows.Controls.ListBox,System.IO.FileInfo[])">
+            <summary>
+            根据FileInfo数组更新控件listbox
+            </summary>
+            <param name="lb"></param>
+            <param name="files"></param>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.UpdateByDirectoryInfos(System.Windows.Controls.ListBox,System.IO.DirectoryInfo)">
+            <summary>
+            根据DirectoryInfo数组更新控件listbox
+            </summary>
+            <param name="lb"></param>
+            <param name="dir"></param>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.UpdateByMainThread(System.Windows.Controls.ListBox,System.IO.FileInfo[])">
+            <summary>
+            调用主线程更新文件信息到listbox
+            </summary>
+            <param name="lb"></param>
+            <param name="files">文件信息</param>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.UpdateByMainThread(System.Windows.Controls.ListBox,System.IO.DirectoryInfo)">
+            <summary>
+            调用主线程更新目录信息到listbox
+            </summary>
+            <param name="lb"></param>
+            <param name="dir">路径信息</param>
+        </member>
+        <member name="M:MyControlItem.MyItemManager.FlushLBByCurrentPath(System.Windows.Controls.ListBox,System.String)">
+            <summary>
+            由CurrentPath变量刷新listbox
+            </summary>
+            <param name="lb"></param>
+            <param name="CurrentPath"></param>
+        </member>
+        <member name="T:MyControlItem.MyFindManager">
+            <summary>
+            查找管理,提供多线程查找操作
+            </summary>
+        </member>
+        <member name="M:MyControlItem.MyFindManager.AddLBItemByThreads(System.Windows.Controls.ListBox,System.String,System.Threading.CancellationToken,System.String)">
+            <summary>
+            4线程查找并把结果放入控件的异步方法
+            </summary>
+            <param name="lb">listbox控件</param>
+            <param name="path">查找的起始路径</param>
+            <param name="ct">用于安全结束线程的对象</param>
+            <param name="pattern">查找的文件或目录名</param>
+            <returns></returns>
+        </member>
+        <member name="M:MyControlItem.MyFindManager.AddLBItem(System.Windows.Controls.ListBox,System.String,System.Threading.CancellationToken,System.String)">
+            <summary>
+            查找并把结果放入控件的普通方法
+            </summary>
+            <param name="lb"></param>
+            <param name="path"></param>
+            <param name="ct"></param>
+            <param name="pattern"></param>
+        </member>
+        <member name="M:MyControlItem.MyFindManager.AddLBItemAnsyc(System.Windows.Controls.ListBox,System.String,System.Threading.CancellationToken,System.String)">
+            <summary>
+            新开1个线程查找并把结果放入控件的异步方法
+            </summary>
+            <param name="lb"></param>
+            <param name="path"></param>
+            <param name="ct"></param>
+            <param name="pattern"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MyControlItem.MyCopyManager">
+            <summary>
+            复制管理，提供复制操作
+            </summary>
+        </member>
+        <member name="M:MyControlItem.MyCopyManager.CopyFile(System.String,System.String)">
+            <summary>
+            复制文件，已处理各种意外
+            </summary>
+            <param name="srcfile">源文件</param>
+            <param name="destpath">目的路径</param>
+        </member>
+        <member name="M:MyControlItem.MyCopyManager.CopyFolder(System.String,System.String)">
+            <summary>
+            复制目录，已处理各种意外
+            </summary>
+            <param name="srcdir">源路径</param>
+            <param name="destpath">目的路径</param>
+        </member>
+    </members>
+</doc>

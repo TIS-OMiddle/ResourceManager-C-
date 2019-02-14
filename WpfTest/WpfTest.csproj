@@ -99,13 +99,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MyControlItem\MyControlItem\MyControlItem.csproj">
+    <Resource Include="电脑.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyControlItem\MyControlItem\MyControlItem.csproj">
       <Project>{a34519cb-e18d-4663-ba3a-7dc7c7524900}</Project>
       <Name>MyControlItem</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="电脑.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

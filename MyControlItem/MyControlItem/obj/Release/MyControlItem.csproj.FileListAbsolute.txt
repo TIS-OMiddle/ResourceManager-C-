@@ -1,0 +1,4 @@
+F:\Project\MyControlItem\MyControlItem\bin\Release\MyControlItem.dll
+F:\Project\MyControlItem\MyControlItem\bin\Release\MyControlItem.pdb
+F:\Project\MyControlItem\MyControlItem\obj\Release\MyControlItem.dll
+F:\Project\MyControlItem\MyControlItem\obj\Release\MyControlItem.pdb

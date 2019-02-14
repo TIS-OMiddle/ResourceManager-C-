@@ -1,3 +1,7 @@
 WpfTest/bin
 WpfTest/obj
 .vs
+
+MyControlItem/.vs
+MyControlItem/bin
+MyControlItem/obj
